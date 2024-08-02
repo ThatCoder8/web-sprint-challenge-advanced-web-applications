@@ -216,6 +216,7 @@
 // }
 import React, { useState } from 'react';
 import { NavLink, Routes, Route, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import Articles from './Articles';
 import LoginForm from './LoginForm';
 import Message from './Message';
@@ -230,7 +231,6 @@ export default function App() {
   const [articles, setArticles] = useState([]);
   const [currentArticleId, setCurrentArticleId] = useState(null);
   const [spinnerOn, setSpinnerOn] = useState(false);
-
   const navigate = useNavigate();
 
   const redirectToLogin = () => navigate('/');
@@ -245,22 +245,13 @@ export default function App() {
   const login = async ({ username, password }) => {
     setSpinnerOn(true);
     try {
-      const res = await fetch(loginUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
-      });
-      if (res.ok) {
-        const { token, message } = await res.json();
-        localStorage.setItem('token', token);
-        setMessage(message);
-        redirectToArticles();
-      } else {
-        const error = await res.json();
-        setMessage(error.message || 'Login failed');
-      }
-    } catch (err) {
-      setMessage('Error logging in.');
+      const response = await axios.post(loginUrl, { username, password });
+      const { token, message } = response.data;
+      localStorage.setItem('token', token);
+      setMessage(message);
+      redirectToArticles();
+    } catch (error) {
+      setMessage(error.response?.data?.message || 'Login failed');
     } finally {
       setSpinnerOn(false);
     }
@@ -270,20 +261,16 @@ export default function App() {
     setSpinnerOn(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(articlesUrl, {
-        method: 'GET',
-        headers: { 'Authorization': `Bearer ${token}` },
+      const response = await axios.get(articlesUrl, {
+        headers: { Authorization: token },
       });
-      if (res.ok) {
-        const data = await res.json();
-        setArticles(data);
-      } else if (res.status === 401) {
+      setArticles(response.data);
+    } catch (error) {
+      if (error.response?.status === 401) {
         redirectToLogin();
       } else {
         setMessage('Error fetching articles.');
       }
-    } catch (err) {
-      setMessage('Error fetching articles.');
     } finally {
       setSpinnerOn(false);
     }
@@ -292,24 +279,14 @@ export default function App() {
   const postArticle = async (article) => {
     setMessage('');
     setSpinnerOn(true);
-    const token = localStorage.getItem('token');
     try {
-      const res = await fetch(articlesUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(article),
+      const token = localStorage.getItem('token');
+      const response = await axios.post(articlesUrl, article, {
+        headers: { Authorization: token },
       });
-      if (res.ok) {
-        const data = await res.json();
-        setArticles([...articles, data]);
-        setMessage('Article posted successfully!');
-      } else {
-        setMessage('Error posting article.');
-      }
-    } catch (err) {
+      setArticles([...articles, response.data]);
+      setMessage('Article posted successfully!');
+    } catch (error) {
       setMessage('Error posting article.');
     } finally {
       setSpinnerOn(false);
@@ -319,24 +296,14 @@ export default function App() {
   const updateArticle = async ({ article_id, article }) => {
     setMessage('');
     setSpinnerOn(true);
-    const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`${articlesUrl}/${article_id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(article),
+      const token = localStorage.getItem('token');
+      const response = await axios.put(`${articlesUrl}/${article_id}`, article, {
+        headers: { Authorization: token },
       });
-      if (res.ok) {
-        const updatedArticle = await res.json();
-        setArticles(articles.map(art => art.article_id === article_id ? updatedArticle : art));
-        setMessage('Article updated successfully!');
-      } else {
-        setMessage('Error updating article.');
-      }
-    } catch (err) {
+      setArticles(articles.map(art => art.article_id === article_id ? response.data : art));
+      setMessage('Article updated successfully!');
+    } catch (error) {
       setMessage('Error updating article.');
     } finally {
       setSpinnerOn(false);
@@ -346,19 +313,14 @@ export default function App() {
   const deleteArticle = async (article_id) => {
     setMessage('');
     setSpinnerOn(true);
-    const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`${articlesUrl}/${article_id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` },
+      const token = localStorage.getItem('token');
+      await axios.delete(`${articlesUrl}/${article_id}`, {
+        headers: { Authorization: token },
       });
-      if (res.ok) {
-        setArticles(articles.filter(art => art.article_id !== article_id));
-        setMessage('Article deleted successfully!');
-      } else {
-        setMessage('Error deleting article.');
-      }
-    } catch (err) {
+      setArticles(articles.filter(art => art.article_id !== article_id));
+      setMessage('Article deleted successfully!');
+    } catch (error) {
       setMessage('Error deleting article.');
     } finally {
       setSpinnerOn(false);
@@ -379,21 +341,25 @@ export default function App() {
         <Routes>
           <Route path="/" element={<LoginForm login={login} />} />
           <Route path="articles" element={
-            <>
-              <ArticleForm
-                postArticle={postArticle}
-                updateArticle={updateArticle}
-                setCurrentArticleId={setCurrentArticleId}
-                currentArticle={articles.find(article => article.article_id === currentArticleId)}
-              />
-              <Articles
-                articles={articles}
-                getArticles={getArticles}
-                deleteArticle={deleteArticle}
-                setCurrentArticleId={setCurrentArticleId}
-                currentArticleId={currentArticleId}
-              />
-            </>
+            localStorage.getItem('token') ? (
+              <>
+                <ArticleForm
+                  postArticle={postArticle}
+                  updateArticle={updateArticle}
+                  setCurrentArticleId={setCurrentArticleId}
+                  currentArticle={articles.find(article => article.article_id === currentArticleId)}
+                />
+                <Articles
+                  articles={articles}
+                  getArticles={getArticles}
+                  deleteArticle={deleteArticle}
+                  setCurrentArticleId={setCurrentArticleId}
+                  currentArticleId={currentArticleId}
+                />
+              </>
+            ) : (
+              redirectToLogin()
+            )
           } />
         </Routes>
         <footer>Bloom Institute of Technology 2024</footer>
@@ -401,5 +367,3 @@ export default function App() {
     </>
   );
 }
-
-

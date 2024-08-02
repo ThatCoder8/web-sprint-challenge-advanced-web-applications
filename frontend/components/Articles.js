@@ -75,7 +75,6 @@ export default function Articles({
   getArticles,
   deleteArticle,
   setCurrentArticleId,
-  currentArticleId,
 }) {
   useEffect(() => {
     getArticles();
