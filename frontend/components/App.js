@@ -5,6 +5,7 @@ import LoginForm from './LoginForm'
 import Message from './Message'
 import ArticleForm from './ArticleForm'
 import Spinner from './Spinner'
+import axios from 'axios'
 
 const articlesUrl = 'http://localhost:9000/api/articles'
 const loginUrl = 'http://localhost:9000/api/login'
@@ -18,8 +19,9 @@ export default function App() {
 
   // ✨ Research `useNavigate` in React Router v.6
   const navigate = useNavigate()
-  const redirectToLogin = () => { /* ✨ implement */ }
-  const redirectToArticles = () => { /* ✨ implement */ }
+  const redirectToLogin = () => navigate('/');
+const redirectToArticles = () => navigate('/articles');
+
 
   const logout = () => {
     // ✨ implement
@@ -27,6 +29,12 @@ export default function App() {
     // and a message saying "Goodbye!" should be set in its proper state.
     // In any case, we should redirect the browser back to the login screen,
     // using the helper above.
+    const logout = () => {
+      localStorage.removeItem('token');
+      setMessage('Goodbye!');
+      redirectToLogin();
+    };
+    
   }
 
   const login = ({ username, password }) => {
@@ -36,9 +44,25 @@ export default function App() {
     // On success, we should set the token to local storage in a 'token' key,
     // put the server success message in its proper state, and redirect
     // to the Articles screen. Don't forget to turn off the spinner!
-  }
+    setMessage('');
+    setSpinnerOn(true);
 
-  const getArticles = () => {
+  axios.post(loginUrl, { username, password })
+    .then(response => {
+      localStorage.setItem('token', response.data.token);
+      setMessage(response.data.message);
+      redirectToArticles();
+    })
+    .catch(error => {
+      setMessage(error?.response?.data?.message || 'An error occurred. Please try again');
+    })
+    .finally(() => {
+      setSpinnerOn(false);
+    });
+};
+
+
+  const getArticles = async () => {
     // ✨ implement
     // We should flush the message state, turn on the spinner
     // and launch an authenticated request to the proper endpoint.
@@ -47,6 +71,12 @@ export default function App() {
     // If something goes wrong, check the status of the response:
     // if it's a 401 the token might have gone bad, and we should redirect to login.
     // Don't forget to turn off the spinner!
+    try {
+      const response = await axios.get('/api/articles', {headers: {Authorization: token }} )
+      setArticles(response.data) } catch (error) {
+        if (error?.response?.status == 401 ) logout()
+      }
+    }
   }
 
   const postArticle = article => {
@@ -62,14 +92,14 @@ export default function App() {
   }
 
   const deleteArticle = article_id => {
-    // ✨ implement
-  }
+    // ✨ implement 
+  } 
+
 
   return (
-    // ✨ fix the JSX: `Spinner`, `Message`, `LoginForm`, `ArticleForm` and `Articles` expect props ❗
     <>
-      <Spinner />
-      <Message />
+      <Spinner on={spinnerOn} />
+      <Message message={message} />
       <button id="logout" onClick={logout}>Logout from app</button>
       <div id="wrapper" style={{ opacity: spinnerOn ? "0.25" : "1" }}> {/* <-- do not change this line */}
         <h1>Advanced Web Applications</h1>
@@ -78,16 +108,19 @@ export default function App() {
           <NavLink id="articlesScreen" to="/articles">Articles</NavLink>
         </nav>
         <Routes>
-          <Route path="/" element={<LoginForm />} />
+          <Route path="/" element={<LoginForm onLogin={login} />} />
           <Route path="articles" element={
             <>
-              <ArticleForm />
-              <Articles />
+              <ArticleForm onSubmit={postArticle} />
+              <Articles articles={articles} onDelete={deleteArticle} onUpdate={updateArticle} />
             </>
           } />
         </Routes>
         <footer>Bloom Institute of Technology 2024</footer>
       </div>
     </>
-  )
-}
+  ) }
+
+
+// This closing brace appears to be unnecessary or misplaced.
+// Removing it to resolve the "Declaration or statement expected" error.
