@@ -62,7 +62,7 @@ const redirectToArticles = () => navigate('/articles');
 };
 
 
-  const getArticles = async () => {
+  // const getArticles = async () => {
     // ✨ implement
     // We should flush the message state, turn on the spinner
     // and launch an authenticated request to the proper endpoint.
@@ -71,13 +71,32 @@ const redirectToArticles = () => navigate('/articles');
     // If something goes wrong, check the status of the response:
     // if it's a 401 the token might have gone bad, and we should redirect to login.
     // Don't forget to turn off the spinner!
-    try {
-      const response = await axios.get('/api/articles', {headers: {Authorization: token }} )
-      setArticles(response.data) } catch (error) {
-        if (error?.response?.status == 401 ) logout()
-      }
-    }
-  }
+    const getArticles = () => {
+      setMessage('');
+      setSpinnerOn(true);
+    
+      const token = localStorage.getItem('token');
+    
+      axios.get(articlesUrl, {
+        headers: { Authorization: token }
+      })
+        .then(response => {
+          setArticles(response.data);
+          setMessage('Articles retrieved successfully');
+        })
+        .catch(error => {
+          if (error.response && error.response.status === 401) {
+            setMessage('Token expired. Please login again.');
+            redirectToLogin();
+          } else {
+            setMessage(error?.response?.data?.message || 'Failed to fetch articles');
+          }
+        })
+        .finally(() => {
+          setSpinnerOn(false);
+        });
+    };
+    
 
   const postArticle = article => {
     // ✨ implement
@@ -119,8 +138,8 @@ const redirectToArticles = () => navigate('/articles');
         <footer>Bloom Institute of Technology 2024</footer>
       </div>
     </>
-  ) }
+  )} 
 
 
 // This closing brace appears to be unnecessary or misplaced.
-// Removing it to resolve the "Declaration or statement expected" error.
+// Removing it to resolve the "Declaration or statement expected" error. 
