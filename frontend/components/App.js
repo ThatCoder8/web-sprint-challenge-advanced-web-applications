@@ -147,6 +147,20 @@ const redirectToArticles = () => navigate('/articles');
 
   const deleteArticle = article_id => {
     // ✨ implement 
+      setSpinnerOn(true);
+      axios.delete(`${articlesUrl}/${article_id}`, {
+        headers: { Authorization: localStorage.getItem('token') }
+      })
+        .then(() => {
+          setArticles(currentArticles => 
+            currentArticles.filter(article => article.article_id !== article_id)
+          );
+          setMessage('Article deleted successfully');
+        })
+        .catch(err => setMessage(err.response?.status === 401 ? 'Token expired. Login again.' : 'Delete failed'))
+        .finally(() => setSpinnerOn(false));
+    };
+    
   } 
 
 
