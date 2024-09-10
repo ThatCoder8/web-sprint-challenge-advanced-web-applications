@@ -10,10 +10,6 @@ export default function ArticleForm({ postArticle, updateArticle, setCurrentArti
 
   useEffect(() => {
 
-
-
-
-
     if (currentArticle) {
       setValues({
         title: currentArticle.title,
@@ -32,9 +28,6 @@ export default function ArticleForm({ postArticle, updateArticle, setCurrentArti
 
   const onSubmit = evt => {
     evt.preventDefault()
-
-
-
     if (currentArticle) {
       updateArticle({ ...values, article_id: currentArticle.article_id })
     } else {

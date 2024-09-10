@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import PT from 'prop-types'
+import axios from 'axios'
 
 export default function Articles(props) {
   // ✨ where are my props? Destructure them here
@@ -10,7 +11,16 @@ export default function Articles(props) {
 
   useEffect(() => {
     // ✨ grab the articles here, on first render only
-  })
+    // localStorage.getItem('token')
+    // const token = localStorage.getItem('token')
+    // axios.get('http://localhost:9000/api/articles', {headers: {Authorization: token}}).then(res => {
+    //   console.log(res)
+    //   setArticles(res.data.articles)
+    // }) 
+    props.getArticles()
+  },[])
+
+  // const[articles, setArticles]= useState([])
 
   return (
     // ✨ fix the JSX: replace `Function.prototype` with actual functions
@@ -18,9 +28,9 @@ export default function Articles(props) {
     <div className="articles">
       <h2>Articles</h2>
       {
-        ![].length
+        !props.articles.length
           ? 'No articles yet'
-          : [].map(art => {
+          : props.articles.map(art => {
             return (
               <div className="article" key={art.article_id}>
                 <div>
@@ -29,7 +39,8 @@ export default function Articles(props) {
                   <p>Topic: {art.topic}</p>
                 </div>
                 <div>
-                  <button disabled={true} onClick={Function.prototype}>Edit</button>
+                  <button disabled={true} onClick={Function.prototype} 
+                  >Edit</button>
                   <button disabled={true} onClick={Function.prototype}>Delete</button>
                 </div>
               </div>

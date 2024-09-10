@@ -6,6 +6,7 @@ import Message from './Message'
 import ArticleForm from './ArticleForm'
 import Spinner from './Spinner'
 import axios from 'axios'
+import { response } from 'msw'
 
 const articlesUrl = 'http://localhost:9000/api/articles'
 const loginUrl = 'http://localhost:9000/api/login'
@@ -81,8 +82,8 @@ const redirectToArticles = () => navigate('/articles');
         headers: { Authorization: token }
       })
         .then(response => {
-          setArticles(response.data);
-          setMessage('Articles retrieved successfully');
+          setArticles(response.data.articles);
+          setMessage(response.data.message);
         })
         .catch(error => {
           if (error.response && error.response.status === 401) {
@@ -98,16 +99,50 @@ const redirectToArticles = () => navigate('/articles');
     };
     
 
-  const postArticle = article => {
+  const postArticle = ({title, text, topic}) => {
     // ✨ implement
     // The flow is very similar to the `getArticles` function.
     // You'll know what to do! Use log statements or breakpoints
     // to inspect the response from the server.
-  }
+    setMessage('');
+    setSpinnerOn(true);
+    const token = localStorage.getItem('token');
+
+    axios.post(articlesUrl, { title, text, topic },
+    {headers: { Authorization: token }}
+  )
+  .then(response => {
+    setArticles(articles => articles.concat(response.data));
+     setMessage(response.data.message);
+     getArticles();
+   })        .catch(error => {
+    if (error.response && error.response.status === 401) {
+      setMessage('Token expired. Please login again.');
+      redirectToLogin();
+    } else {
+      setMessage(error?.response?.data?.message || 'Failed to fetch articles');
+    }
+  })
+  .finally(() => {
+    setSpinnerOn(false);
+  });
+};
 
   const updateArticle = ({ article_id, article }) => {
     // ✨ implement
     // You got this!
+    const token = localStorage.getItem('token');
+
+    axios.post(articlesUrl, { article_id, article}, {
+      headers: { Authorization: token }
+    })
+    .then(response => {
+      setMessage(response.data.message);
+      getArticles();
+    })
+    .catch(error => {
+      setMessage(error?.response?.data?.message || 'Failed to update article');
+    })
   }
 
   const deleteArticle = article_id => {
@@ -130,15 +165,15 @@ const redirectToArticles = () => navigate('/articles');
           <Route path="/" element={<LoginForm onLogin={login} />} />
           <Route path="articles" element={
             <>
-              <ArticleForm onSubmit={postArticle} />
-              <Articles articles={articles} onDelete={deleteArticle} onUpdate={updateArticle} />
+              <ArticleForm postArticle={postArticle} />
+              <Articles articles={articles} onDelete={deleteArticle} onUpdate={updateArticle} getArticles={getArticles}  setCurrentArticleId={setCurrentArticleId}/>
             </>
           } />
         </Routes>
         <footer>Bloom Institute of Technology 2024</footer>
       </div>
     </>
-  )} 
+  )}
 
 
 // This closing brace appears to be unnecessary or misplaced.
