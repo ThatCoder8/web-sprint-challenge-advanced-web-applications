@@ -161,8 +161,8 @@ const redirectToArticles = () => navigate('/articles');
         .finally(() => setSpinnerOn(false));
     };
     
-  } 
-
+  
+  }
 
   return (
     <>
