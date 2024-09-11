@@ -162,7 +162,7 @@ const redirectToArticles = () => navigate('/articles');
     };
     
   
-  }
+  
 
   return (
     <>
