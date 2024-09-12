@@ -17,6 +17,7 @@ export default function App() {
   const [articles, setArticles] = useState([])
   const [currentArticleId, setCurrentArticleId] = useState()
   const [spinnerOn, setSpinnerOn] = useState(false)
+  const currentArticle = articles.find(article => article.article_id === currentArticleId);
 
   // ✨ Research `useNavigate` in React Router v.6
   const navigate = useNavigate()
@@ -179,8 +180,8 @@ const redirectToArticles = () => navigate('/articles');
           <Route path="/" element={<LoginForm onLogin={login} />} />
           <Route path="articles" element={
             <>
-              <ArticleForm postArticle={postArticle} setCurrentArticleId={setCurrentArticleId} currentArticleId={currentArticleId}/>
-              <Articles articles={articles} onDelete={deleteArticle} onUpdate={updateArticle} getArticles={getArticles}  setCurrentArticleId={setCurrentArticleId} article_id={currentArticleId} />
+              <ArticleForm postArticle={postArticle} setCurrentArticleId={setCurrentArticleId} />
+              <Articles articles={articles} onDelete={deleteArticle} onUpdate={updateArticle} getArticles={getArticles}  setCurrentArticleId={setCurrentArticleId} article_id={currentArticleId} currentArticle={currentArticle} />
             </>
           } />
         </Routes>
