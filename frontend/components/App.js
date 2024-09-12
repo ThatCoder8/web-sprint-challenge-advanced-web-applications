@@ -179,8 +179,8 @@ const redirectToArticles = () => navigate('/articles');
           <Route path="/" element={<LoginForm onLogin={login} />} />
           <Route path="articles" element={
             <>
-              <ArticleForm postArticle={postArticle} />
-              <Articles articles={articles} onDelete={deleteArticle} onUpdate={updateArticle} getArticles={getArticles}  setCurrentArticleId={setCurrentArticleId}/>
+              <ArticleForm postArticle={postArticle} setCurrentArticleId={setCurrentArticleId} currentArticleId={currentArticleId}/>
+              <Articles articles={articles} onDelete={deleteArticle} onUpdate={updateArticle} getArticles={getArticles}  setCurrentArticleId={setCurrentArticleId} article_id={currentArticleId} />
             </>
           } />
         </Routes>

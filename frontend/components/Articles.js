@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom'
 import PT from 'prop-types'
 import axios from 'axios'
 
-export default function Articles({ articles, setCurrentArticleId, onDeleteArticle }) {
+export default function Articles(props) {
   // ✨ where are my props? Destructure them here
 
   // ✨ implement conditional logic: if no token exists
@@ -39,9 +39,9 @@ export default function Articles({ articles, setCurrentArticleId, onDeleteArticl
                   <p>Topic: {art.topic}</p>
                 </div>
                 <div>
-                  <button disabled={true} onClick={() => setCurrentArticleId(articles.article_id)}
+                  <button disabled={false} onClick={() => props.setCurrentArticleId(art.article_id)}
                   >Edit</button>
-                  <button disabled={true} onClick={Function.prototype}>Delete</button>
+                  <button disabled={false} onClick={Function.prototype}>Delete</button>
                 </div>
               </div>
             )

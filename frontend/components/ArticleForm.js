@@ -7,7 +7,6 @@ const initialFormValues = { title: '', text: '', topic: '' }
 export default function ArticleForm({ postArticle, updateArticle, setCurrentArticleId, currentArticle }) {
   const [values, setValues] = useState(initialFormValues)
 
-
   useEffect(() => {
 
     if (currentArticle) {
