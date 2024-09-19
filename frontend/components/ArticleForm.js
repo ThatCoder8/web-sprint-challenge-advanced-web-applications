@@ -4,21 +4,26 @@ import PT from 'prop-types'
 const initialFormValues = { title: '', text: '', topic: '' }
 
 
-export default function ArticleForm({ postArticle, updateArticle, setCurrentArticleId, currentArticle }) {
+export default function ArticleForm({ postArticle, updateArticle, setCurrentArticleId, articles, currentArticleId }) {
   const [values, setValues] = useState(initialFormValues)
-
+  
+  console.log(currentArticleId)
   useEffect(() => {
-
-    if (currentArticle) {
-      setValues({
-        title: currentArticle.title,
-        text: currentArticle.text,
-        topic: currentArticle.topic
-      })
-    } else {
-      setValues(initialFormValues)
-    }
-  }, [currentArticle])
+if(currentArticleId && articles.length > 0) {
+     const currentArticle = articles.find(article => article.article_id === currentArticleId )
+  console.log(currentArticleId)
+    if (currentArticle){ 
+    setValues(currentArticle)
+  } else (
+    setValues(initialFormValues)
+  )
+  
+     //   if (currentArticle){
+  
+  //   } else {
+  //     setValues(initialFormValues)
+  //   }
+ } }, [currentArticleId, articles])
 
   const onChange = evt => {
     const { id, value } = evt.target
@@ -27,12 +32,13 @@ export default function ArticleForm({ postArticle, updateArticle, setCurrentArti
 
   const onSubmit = evt => {
     evt.preventDefault()
-    if (currentArticle) {
-      updateArticle({ ...values, article_id: currentArticle.article_id })
+    console.log({articles:values, article_id: currentArticleId.article_id})
+    if (currentArticleId) {
+      updateArticle(values)
     } else {
       postArticle(values)
     }
-  }
+  } 
 
   const isDisabled = () => {
 
@@ -45,7 +51,7 @@ export default function ArticleForm({ postArticle, updateArticle, setCurrentArti
 
     <form id="form" onSubmit={onSubmit}>
 
-      <h2>{currentArticle ? 'Edit' : 'Create'} Article</h2>
+      <h2>{currentArticleId ? 'Edit' : 'Create'} Article</h2>
       <input
         maxLength={50}
         onChange={onChange}
