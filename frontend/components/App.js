@@ -31,13 +31,12 @@ const redirectToArticles = () => navigate('/articles');
     // and a message saying "Goodbye!" should be set in its proper state.
     // In any case, we should redirect the browser back to the login screen,
     // using the helper above.
-    const logout = () => {
       localStorage.removeItem('token');
       setMessage('Goodbye!');
       redirectToLogin();
     };
     
-  }
+  
 
   const login = ({ username, password }) => {
     // ✨ implement
@@ -100,28 +99,54 @@ const redirectToArticles = () => navigate('/articles');
     };
     
 
-  const postArticle = ({title, text, topic}) => {
-    // ✨ implement
-    // The flow is very similar to the `getArticles` function.
-    // You'll know what to do! Use log statements or breakpoints
-    // to inspect the response from the server.
-    setMessage('');
-    setSpinnerOn(true);
-    const token = localStorage.getItem('token');
+//   const postArticle = ({title, text, topic}) => {
+//     // ✨ implement
+//     // The flow is very similar to the `getArticles` function.
+//     // You'll know what to do! Use log statements or breakpoints
+//     // to inspect the response from the server.
+//     setMessage('');
+//     setSpinnerOn(true);
+//     const token = localStorage.getItem('token');
 
-    axios.post(articlesUrl, { title, text, topic },
+//     axios.post(articlesUrl, { title, text, topic },
+//     {headers: { Authorization: token }}
+//   )
+//   .then(response => {
+//     setArticles(articles => articles.concat(response.data));
+//      setMessage(response.data.message);
+//      getArticles();
+//    })        .catch(error => {
+//     if (error.response && error.response.status === 401) {
+//       setMessage('Token expired. Please login again.');
+//       redirectToLogin();
+//     } else {
+//       setMessage(error?.response?.data?.message || 'Failed to fetch articles');
+//     }
+//   })
+//   .finally(() => {
+//     setSpinnerOn(false);
+//   });
+// };
+
+const postArticle = ({title, text, topic}) => {
+  setMessage('');
+  setSpinnerOn(true);
+  const token = localStorage.getItem('token');
+
+  axios.post(articlesUrl, { title, text, topic },
     {headers: { Authorization: token }}
   )
   .then(response => {
-    setArticles(articles => articles.concat(response.data));
-     setMessage(response.data.message);
-     getArticles();
-   })        .catch(error => {
+    setArticles(prevArticles => [...prevArticles, response.data.article]);
+    setMessage(response.data.message);
+    setCurrentArticleId(null); // Reset the form
+  })
+  .catch(error => {
     if (error.response && error.response.status === 401) {
       setMessage('Token expired. Please login again.');
       redirectToLogin();
     } else {
-      setMessage(error?.response?.data?.message || 'Failed to fetch articles');
+      setMessage(error?.response?.data?.message || 'Failed to post article');
     }
   })
   .finally(() => {
@@ -129,35 +154,61 @@ const redirectToArticles = () => navigate('/articles');
   });
 };
 
-  const updateArticle = (article ) => {
-    // ✨ implement
-    // You got this!
-    console.log(article);
-    const token = localStorage.getItem('token');
 
-    axios.post(articlesUrl, { ...article}, {
+  // const updateArticle = (article ) => {
+  //   // ✨ implement
+  //   // You got this!
+  //   console.log(article);
+  //   const token = localStorage.getItem('token');
+
+  //   axios.post(articlesUrl, { ...article}, {
+  //     headers: { Authorization: token }
+  //   })
+  //   .then(response => {
+  //     setMessage(response.data.message);
+  //     getArticles();
+  //   })
+  //   .catch(error => {
+  //     setMessage(error?.response?.data?.message || 'Failed to update article');
+  //   }) 
+  // }
+  const updateArticle = (article) => {
+    setSpinnerOn(true);
+    const token = localStorage.getItem('token');
+  
+    axios.put(`${articlesUrl}/${article.article_id}`, article, {
       headers: { Authorization: token }
     })
     .then(response => {
       setMessage(response.data.message);
-      getArticles();
+      setArticles(currentArticles => 
+        currentArticles.map(art => 
+          art.article_id === article.article_id ? response.data.article : art
+        )
+      );
+      setCurrentArticleId(null);
     })
     .catch(error => {
       setMessage(error?.response?.data?.message || 'Failed to update article');
     })
+    .finally(() => {
+      setSpinnerOn(false);
+    });
   }
+  
 
   const deleteArticle = article_id => {
     // ✨ implement 
       setSpinnerOn(true);
+      const token = localStorage.getItem('token');
       axios.delete(`${articlesUrl}/${article_id}`, {
-        headers: { Authorization: localStorage.getItem('token') }
+        headers: { Authorization: token }
       })
-        .then(() => {
+        .then((response) => {
           setArticles(currentArticles => 
             currentArticles.filter(article => article.article_id !== article_id)
           );
-          setMessage('Article deleted successfully');
+          setMessage(response.data.message);
         })
         .catch(err => setMessage(err.response?.status === 401 ? 'Token expired. Login again.' : 'Delete failed'))
         .finally(() => setSpinnerOn(false));
@@ -181,7 +232,7 @@ const redirectToArticles = () => navigate('/articles');
           <Route path="/" element={<LoginForm onLogin={login} />} />
           <Route path="articles" element={
             <>
-              <ArticleForm postArticle={postArticle} setCurrentArticleId={setCurrentArticleId} currentArticleId={currentArticleId} articles={articles} updateArticle={updateArticle}/>
+              <ArticleForm postArticle={postArticle} setCurrentArticleId={setCurrentArticleId} currentArticleId={currentArticleId} articles={articles} updateArticle={updateArticle} deleteArticle={deleteArticle}/>
               <Articles articles={articles} onDelete={deleteArticle} onUpdate={updateArticle} getArticles={getArticles}  setCurrentArticleId={setCurrentArticleId} article_id={currentArticleId}  />
             </>
           } />

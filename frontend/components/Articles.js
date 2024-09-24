@@ -4,19 +4,13 @@ import PT from 'prop-types'
 import axios from 'axios'
 
 export default function Articles(props) {
-  // ✨ where are my props? Destructure them here
-
-  // ✨ implement conditional logic: if no token exists
-  // we should render a Navigate to login screen (React Router v.6)
+  const token = localStorage.getItem('token')
+  
+  if (!token) {
+    return <Navigate to="/" />
+  }
 
   useEffect(() => {
-    // ✨ grab the articles here, on first render only
-    // localStorage.getItem('token')
-    // const token = localStorage.getItem('token')
-    // axios.get('http://localhost:9000/api/articles', {headers: {Authorization: token}}).then(res => {
-    //   console.log(res)
-    //   setArticles(res.data.articles)
-    // }) 
     props.getArticles()
   },[])
 
@@ -41,7 +35,7 @@ export default function Articles(props) {
                 <div>
                   <button disabled={false} onClick={() => props.setCurrentArticleId(art.article_id)}
                   >Edit</button>
-                  <button disabled={false} onClick={Function.prototype}>Delete</button>
+                  <button disabled={false} onClick={() => props.onDelete(art.article_id)}>Delete</button>
                 </div>
               </div>
             )

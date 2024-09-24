@@ -4,7 +4,7 @@ import PT from 'prop-types'
 const initialFormValues = { title: '', text: '', topic: '' }
 
 
-export default function ArticleForm({ postArticle, updateArticle, setCurrentArticleId, articles, currentArticleId }) {
+export default function ArticleForm({ postArticle, updateArticle, setCurrentArticleId, articles, currentArticleId, deleteArticle }) {
   const [values, setValues] = useState(initialFormValues)
   
   console.log(currentArticleId)
@@ -32,12 +32,13 @@ if(currentArticleId && articles.length > 0) {
 
   const onSubmit = evt => {
     evt.preventDefault()
-    console.log({articles:values, article_id: currentArticleId.article_id})
+    // console.log({articles:values, article_id: currentArticleId.article_id})
     if (currentArticleId) {
       updateArticle(values)
     } else {
       postArticle(values)
     }
+    setValues(initialFormValues)
   } 
 
   const isDisabled = () => {
@@ -75,7 +76,7 @@ if(currentArticleId && articles.length > 0) {
       <div className="button-group">
         <button disabled={isDisabled()} id="submitArticle">Submit</button>
 
-        <button onClick={() => setCurrentArticleId(null)}>Cancel edit</button>
+        <button onClick={() => setValues(initialFormValues)}>Cancel edit</button>
       </div>
     </form>
   )
